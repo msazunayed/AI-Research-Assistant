@@ -1,6 +1,6 @@
-# Research Desk — AI Research Assistant
+# Research Desk - AI Research Assistant
 
-Give it a topic. It searches the web, reads the sources, and writes a cited report — streamed live to a web UI.
+Give it a topic. It searches the web, reads the sources, and writes a cited report - streamed live to a web UI.
 
 ## Project layout
 
