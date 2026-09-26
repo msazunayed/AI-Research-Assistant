@@ -23,7 +23,7 @@ AI-Research-Assistant/
 2. **Search key** — free key from [tavily.com](https://tavily.com)
 3. Create `.env` at the repo root:
    ```bash
-   "You can use any free like: GROK API KEY"
+   "You can use any free Provider like: GROK API KEY"
    OPENAI_API_KEY=your-groq-key
    TAVILY_API_KEY=your-tavily-key
    ```
