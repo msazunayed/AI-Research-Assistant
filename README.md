@@ -46,3 +46,9 @@ Type a topic, click **Start research**, watch it plan queries → search → rea
 ## Customizing the report
 
 Report tone/structure comes from the `write_report` prompt in `backend/main.py` — edit it to change the style.
+
+## Output 
+https://github.com/user-attachments/assets/e44f65bc-ac34-4ff3-81ec-b4942b6aee2b
+
+
+
