@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F6F7F9;
+    --surface: #FFFFFF;
+    --border: #E4E7EC;
+    --border-strong: #D0D5DD;
+    --text: #101322;
+    --text-muted: #667085;
+    --text-faint: #98A2B3;
+    --accent: #2846C9;
+    --accent-dark: #1C317F;
+    --accent-bg: #EEF1FD;
+    --ok: #12805C;
+    --error: #B4232C;
+    --error-bg: #FBEAEA;
+    --radius: 8px;
+    --shadow-xs: 0 1px 2px rgba(16,19,34,0.04);
+    --shadow-sm: 0 1px 2px rgba(16,19,34,0.04), 0 6px 16px -8px rgba(16,19,34,0.10);
+    --shadow-md: 0 2px 4px rgba(16,19,34,0.04), 0 16px 32px -12px rgba(16,19,34,0.14);
+    --gutter: clamp(16px, 4vw, 24px);
+  }
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust: 100%; }
+  html,body{ height:100%; margin:0; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  :root{ padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
+  a, button, textarea{ -webkit-tap-highlight-color: transparent; }
+
+  /* top bar */
+  .topbar{
+    height: 56px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 0 var(--gutter);
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 10;
+    gap: 12px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .brand .mark{
+    width:26px; height:26px; border-radius:6px;
+    background: var(--accent);
+    color:#fff; font-size:13px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"Source Serif 4", serif;
+    flex-shrink:0;
+    box-shadow: var(--shadow-xs);
+  }
+  .brand .name{
+    font-weight:600; font-size:14.5px; letter-spacing:-0.01em;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .brand .name span{ color: var(--text-muted); font-weight:500; }
+
+  .conn{
+    display:flex; align-items:center; gap:7px;
+    font-size: 12.5px; color: var(--text-muted);
+    flex-shrink:0;
+    white-space:nowrap;
+  }
+  .dot{ width:7px; height:7px; border-radius:50%; background: var(--text-faint); flex-shrink:0; }
+  .dot.on{ background: var(--ok); }
+  .dot.off{ background: var(--error); }
+
+  /* two-column layout: sidebar + report canvas */
+  .layout{
+    display:flex;
+    align-items:flex-start;
+    max-width: 1360px;
+    margin: 0 auto;
+    min-height: calc(100vh - 56px);
+    width: 100%;
+  }
+
+  /* sidebar (topic input, progress, sources) */
+  .sidebar{
+    width: min(320px, 34vw);
+    flex-shrink:0;
+    padding: var(--gutter);
+    border-right: 1px solid var(--border);
+    align-self: stretch;
+    display:flex;
+    flex-direction:column;
+    gap: 24px;
+    position: sticky;
+    top: calc(56px + env(safe-area-inset-top, 0px));
+    max-height: calc(100vh - 56px - env(safe-area-inset-top, 0px));
+    overflow-y: auto;
+  }
+
+  .field label{
+    display:block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  textarea{
+    width:100%;
+    font-family:"Inter", sans-serif;
+    font-size: 14px;
+    line-height:1.5;
+    padding: 11px 12px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    border-radius: var(--radius);
+    resize: vertical;
+    min-height: 68px;
+    color: var(--text);
+  }
+  textarea::placeholder{ color: var(--text-faint); }
+  textarea:focus{ outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+
+  button.primary{
+    width:100%;
+    font-family:"Inter", sans-serif;
+    font-weight:600;
+    font-size: 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 11px 16px;
+    border-radius: var(--radius);
+    cursor:pointer;
+    margin-top: 12px;
+  }
+  button.primary{ transition: background 0.15s ease, box-shadow 0.15s ease; box-shadow: var(--shadow-xs); }
+  button.primary:hover:not(:disabled){ background: var(--accent-dark); }
+  button.primary:active:not(:disabled){ background: var(--accent-dark); box-shadow: none; }
+  button.primary:disabled{ background: var(--text-faint); cursor:default; box-shadow:none; }
+  button.primary:focus-visible{ outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+
+  .hint{ font-size:12px; color: var(--text-faint); margin-top:8px; }
+
+  /* the 3-step progress tracker on the left */
+  .stepper{ display:flex; flex-direction:column; gap: 0; }
+  .step{
+    display:flex; gap:12px;
+    padding: 9px 0;
+    position:relative;
+  }
+  .step .rail{
+    display:flex; flex-direction:column; align-items:center;
+    width: 18px; flex-shrink:0;
+  }
+  .step .node{
+    width:18px; height:18px; border-radius:50%;
+    border: 2px solid var(--border-strong);
+    background: var(--surface);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 10px; font-weight:700; color: var(--text-faint);
+  }
+  .step .line{
+    width:2px; flex:1; background: var(--border);
+    margin-top:2px;
+  }
+  .step:last-child .line{ display:none; }
+  .step .label{ font-size:13.5px; color: var(--text-faint); font-weight:500; padding-top:1px; }
+  .step .sub{ font-size:12px; color: var(--text-faint); margin-top:2px; }
+
+  .step.active .node{ border-color: var(--accent); color: var(--accent); }
+  .step.active .label{ color: var(--text); }
+  .step.active .sub{ color: var(--accent); }
+  .step.done .node{ background: var(--ok); border-color: var(--ok); color:#fff; }
+  .step.done .label{ color: var(--text); }
+  .step.done .line{ background: var(--ok); }
+
+  .spin{
+    width:9px; height:9px; border-radius:50%;
+    border:1.6px solid var(--accent); border-top-color: transparent;
+    animation: rot 0.7s linear infinite;
+  }
+  @keyframes rot{ to{ transform: rotate(360deg); } }
+
+  /* list of sources as they come in from the stream */
+  .sources-head{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size: 12.5px; font-weight:600; color: var(--text);
+  }
+  .count-badge{
+    font-size: 11.5px; font-weight:600;
+    background: var(--accent-bg); color: var(--accent);
+    padding: 1px 8px; border-radius: 100px;
+  }
+  .sources{
+    display:flex; flex-direction:column; gap:6px;
+    overflow-y:auto;
+    max-height: 340px;
+    padding-right: 2px;
+  }
+  .source-row{
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    background: var(--surface);
+    text-decoration:none;
+    color: inherit;
+    display:block;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .source-row:hover{ border-color: var(--border-strong); box-shadow: var(--shadow-xs); transform: translateY(-1px); }
+  .source-row:focus-visible{ outline: 2px solid var(--accent); outline-offset: 1px; }
+  .source-row .t{
+    font-size: 12.8px; font-weight:600; color: var(--text);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .source-row .u{
+    font-size: 11.5px; color: var(--text-faint);
+    margin-top:2px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .empty-sources{ font-size:12.5px; color: var(--text-faint); }
+
+  /* the actual report, rendered on the right */
+  .canvas{ flex:1; padding: clamp(24px,5vw,40px) clamp(20px,6vw,56px) 120px; min-width:0; width:100%; }
+  .canvas-inner{ max-width: 700px; margin:0 auto; }
+
+  .placeholder{
+    max-width: 420px;
+    margin: min(16vh, 120px) auto 0;
+    text-align:center;
+  }
+  .placeholder .mark{
+    width:44px; height:44px; border-radius:10px;
+    background: var(--accent-bg); color: var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    margin: 0 auto 14px;
+    font-family:"Source Serif 4", serif; font-weight:700; font-size:18px;
+  }
+  .placeholder h2{ font-size:16px; font-weight:600; margin: 0 0 6px; }
+  .placeholder p{ font-size:13.5px; color: var(--text-muted); line-height:1.6; margin:0; }
+
+  .report-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: clamp(24px,5vw,40px) clamp(20px,5vw,48px);
+    box-shadow: var(--shadow-md);
+  }
+  .report-head{
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 18px;
+    margin-bottom: 26px;
+  }
+  .report-head .eyebrow{
+    font-size:11.5px; font-weight:700; letter-spacing:0.02em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .report-head h1{
+    font-family:"Source Serif 4", serif;
+    font-weight:600;
+    font-size: clamp(21px, 3.6vw, 27px);
+    line-height:1.3;
+    margin: 6px 0 0;
+    color: var(--text);
+    overflow-wrap: break-word;
+  }
+  .report-head .meta{ font-size:12.5px; color: var(--text-muted); margin-top:10px; }
+
+  .report-body{
+    font-family:"Source Serif 4", serif;
+    font-size: clamp(15px, 1.6vw, 16.5px);
+    line-height: 1.75;
+    color: var(--text);
+    overflow-wrap: break-word;
+  }
+  .report-body a{ overflow-wrap: break-word; }
+  .report-body pre, .report-body table{ max-width:100%; overflow-x:auto; display:block; }
+  .report-body h2{
+    font-family:"Inter", sans-serif;
+    font-size: 13px; font-weight:700; letter-spacing:0.03em; text-transform:uppercase;
+    color: var(--text-muted);
+    margin-top: 32px; margin-bottom: 12px;
+  }
+  .report-body h3{ font-size: 17px; margin-top: 24px; font-weight:600; }
+  .report-body p{ margin: 13px 0; }
+  .report-body a{ color: var(--accent); text-decoration-color: var(--border-strong); }
+  .report-body ul, .report-body ol{ padding-left: 22px; }
+  .report-body li{ margin: 6px 0; }
+  .report-body code{
+    font-family:ui-monospace, monospace;
+    background: var(--accent-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.82em;
+    color: var(--accent-dark);
+  }
+  .report-body table{
+    width:100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92em;
+  }
+  .report-body th, .report-body td{
+    border: 1px solid var(--border-strong);
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .report-body th{
+    font-family:"Inter", sans-serif;
+    font-weight:700; font-size:11.5px; letter-spacing:0.02em; text-transform:uppercase;
+    color: var(--text-muted);
+    background: var(--accent-bg);
+  }
+
+  /* official document header block */
+  .report-head .doc-id{
+    font-family:"Inter", sans-serif;
+    font-size: 11px; color: var(--text-muted);
+    letter-spacing:0.01em;
+    margin-top: 4px;
+  }
+  .report-head .meta-row{
+    display:flex; flex-wrap:wrap; gap: 6px 14px;
+    font-size:12.5px; color: var(--text-muted); margin-top:12px;
+  }
+  .report-head .meta-row span{ white-space: nowrap; }
+  .report-head .meta-row span + span{ border-left: 1px solid var(--border-strong); padding-left: 14px; }
+  .print-btn{
+    font-family:"Inter", sans-serif;
+    font-size: 12px; font-weight:600;
+    background: none; border: 1px solid var(--border-strong);
+    color: var(--text-muted);
+    border-radius: 7px; padding: 6px 12px;
+    cursor: pointer;
+  }
+  .print-btn:hover{ color: var(--text); border-color: var(--text-muted); }
+  .print-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .report-head-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+
+  @media print{
+    body{ background:#fff; }
+    .topbar, .sidebar, .print-btn, .stepper{ display:none !important; }
+    .layout{ display:block; max-width:none; }
+    .canvas{ padding:0; }
+    .report-card{ border:none; box-shadow:none; padding:0; }
+    .report-body a{ color: var(--text); text-decoration: underline; }
+  }
+
+  .cursor{
+    display:inline-block; width:7px; height:15px;
+    background:var(--accent); vertical-align:middle;
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .error-banner{
+    display:flex; gap:10px; align-items:flex-start;
+    background: var(--error-bg); color: var(--error);
+    border: 1px solid #F3C6C9;
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-size: 13.5px;
+    font-family:"Inter", sans-serif;
+  }
+
+  ::-webkit-scrollbar{ width:9px; height:9px; }
+  ::-webkit-scrollbar-thumb{ background: var(--border-strong); border-radius:6px; }
+
+  /* responsive stuff below - roughly desktop -> tablet -> phone -> tiny phone */
+
+  /* on big monitors 1360px starts to feel cramped, so loosen it up a bit */
+  @media (min-width: 1440px){
+    .layout{ max-width: 1480px; }
+  }
+
+  /* below this the two columns don't really fit, so stack them */
+  @media (max-width: 860px){
+    .layout{ flex-direction:column; }
+    .sidebar{
+      width:100%;
+      border-right:none;
+      border-bottom:1px solid var(--border);
+      position: static;
+      max-height:none;
+      overflow-y: visible;
+    }
+    .sources{ max-height: 220px; }
+  }
+
+  /* phones */
+  @media (max-width: 600px){
+    .topbar{ height:52px; padding: 0 16px; }
+    .brand .name span{ display:none; }
+    .sidebar{ padding: 18px 16px; gap:20px; }
+    .canvas{ padding: 20px 16px 72px; }
+    .report-head .eyebrow{ font-size:10.5px; }
+    .stepper .label{ font-size:13px; }
+  }
+
+  /* small/old phones - SE-sized screens and the like */
+  @media (max-width: 380px){
+    textarea{ font-size:13.5px; }
+    button.primary{ font-size:13.5px; padding: 10px 14px; }
+  }
+
+  /* landscape phones etc. - 16vh of top margin is way too much when the viewport is short */
+  @media (max-height: 560px){
+    .placeholder{ margin-top: 40px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">R</div>
+      <div class="name">Research Desk <span>&middot; AI research assistant</span></div>
+    </div>
+    <div class="conn" id="conn"><span class="dot" id="connDot"></span></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="field">
+        <label for="topic">Research topic</label>
+        <textarea id="topic" placeholder="e.g. State of solid-state batteries in 2026"></textarea>
+        <button class="primary" id="run">Start research</button>
+        <div class="hint">&#8984; / Ctrl + Enter to run</div>
+      </div>
+
+      <div class="stepper" id="stepper">
+        <div class="step" data-step="0">
+          <div class="rail"><div class="node">1</div><div class="line"></div></div>
+          <div><div class="label">Plan queries</div><div class="sub"></div></div>
+        </div>
+        <div class="step" data-step="1">
+          <div class="rail"><div class="node">2</div><div class="line"></div></div>
+          <div><div class="label">Gather sources</div><div class="sub"></div></div>
+        </div>
+        <div class="step" data-step="2">
+          <div class="rail"><div class="node">3</div><div class="line"></div></div>
+          <div><div class="label">Write report</div><div class="sub"></div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sources-head">
+          <span>Sources</span>
+          <span class="count-badge" id="countBadge">0</span>
+        </div>
+        <div class="sources" id="sources" style="margin-top:10px;">
+          <div class="empty-sources">Sources will appear here as they're read.</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="canvas">
+      <div class="canvas-inner" id="canvasInner">
+        <div class="placeholder" id="emptyState">
+          <div class="mark">R</div>
+          <h2>Nothing researched yet</h2>
+          <p>Enter a topic on the left. Research Desk will plan searches, read sources, and write a cited report here.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script>
+  const API_BASE = "http://localhost:8000";
+
+  const runBtn = document.getElementById("run");
+  const topicEl = document.getElementById("topic");
+  const sourcesEl = document.getElementById("sources");
+  const countBadge = document.getElementById("countBadge");
+  const canvasInner = document.getElementById("canvasInner");
+  const emptyState = document.getElementById("emptyState");
+  const stepperEl = document.getElementById("stepper");
+  const connDot = document.getElementById("connDot");
+
+  let sourceCount = 0;
+
+  // just pinging the backend on load so we can flip the status dot
+  // green/red - doesn't block anything, the run button works regardless
+  fetch(`${API_BASE}/api/health`).then(r => r.ok ? r.json() : Promise.reject())
+    .then(() => {
+      connDot.className = "dot on";
+    })
+    .catch(() => {
+      connDot.className = "dot off";
+    });
+
+  // handles the 1-2-3 progress steps in the sidebar - index is the
+  // currently-active step, everything before it gets a checkmark
+  function setStep(index, subText) {
+    const steps = stepperEl.querySelectorAll(".step");
+    steps.forEach((el, i) => {
+      el.classList.remove("active", "done");
+      const node = el.querySelector(".node");
+      const sub = el.querySelector(".sub");
+      if (i < index) { el.classList.add("done"); node.innerHTML = "&#10003;"; sub.textContent = ""; }
+      else if (i === index) {
+        el.classList.add("active");
+        node.innerHTML = '<span class="spin"></span>';
+        sub.textContent = subText || "";
+      } else {
+        node.textContent = i + 1;
+        sub.textContent = "";
+      }
+    });
+  }
+  function completeAllSteps() {
+    stepperEl.querySelectorAll(".step").forEach(el => {
+      el.classList.remove("active"); el.classList.add("done");
+      el.querySelector(".node").innerHTML = "&#10003;";
+      el.querySelector(".sub").textContent = "";
+    });
+  }
+  function resetStepper() {
+    stepperEl.querySelectorAll(".step").forEach((el, i) => {
+      el.classList.remove("active", "done");
+      el.querySelector(".node").textContent = i + 1;
+      el.querySelector(".sub").textContent = "";
+    });
+  }
+
+  function domainOf(url) {
+    try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; }
+  }
+
+  // Didn't want to pull in a whole markdown library for this, so here's a
+  // hand-rolled version that covers what the report generator actually
+  // outputs: headers, bold/italic, links, lists, paragraphs. Not spec-
+  // compliant, just enough for our own LLM output.
+  function isTableSeparator(line) {
+    // e.g. "|---|:---:|---|" or "---|---" - dashes/colons/pipes only
+    return /^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?$/.test(line);
+  }
+  function splitTableRow(line) {
+    return line.replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+  }
+  function renderMarkdown(md) {
+    const lines = md.replace(/\r\n/g, "\n").split("\n");
+    let html = "";
+    let inList = null;
+    const closeList = () => { if (inList) { html += `</${inList}>`; inList = null; } };
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) { closeList(); continue; }
+      let m;
+
+      // GFM-style table: a "| a | b |" header row immediately followed by a
+      // "|---|---|" separator row. Consume rows until a blank/non-table line.
+      if (line.includes("|") && lines[i + 1] && isTableSeparator(lines[i + 1].trim())) {
+        closeList();
+        const headerCells = splitTableRow(line);
+        html += "<table><thead><tr>" +
+          headerCells.map(c => `<th>${inline(c)}</th>`).join("") +
+          "</tr></thead><tbody>";
+        i += 2; // skip header + separator
+        while (i < lines.length && lines[i].trim().includes("|")) {
+          const cells = splitTableRow(lines[i].trim());
+          html += "<tr>" + cells.map(c => `<td>${inline(c)}</td>`).join("") + "</tr>";
+          i++;
+        }
+        i--; // back up one, the outer loop's i++ will land on the next unread line
+        html += "</tbody></table>";
+        continue;
+      }
+
+      if ((m = line.match(/^### (.+)/))) { closeList(); html += `<h3>${inline(m[1])}</h3>`; continue; }
+      if ((m = line.match(/^## (.+)/)))  { closeList(); html += `<h2>${inline(m[1])}</h2>`; continue; }
+      if ((m = line.match(/^# (.+)/)))   { closeList(); html += `<h2>${inline(m[1])}</h2>`; continue; }
+      if ((m = line.match(/^[-*] (.+)/))) {
+        if (inList !== "ul") { closeList(); html += "<ul>"; inList = "ul"; }
+        html += `<li>${inline(m[1])}</li>`; continue;
+      }
+      if ((m = line.match(/^\d+\. (.+)/))) {
+        if (inList !== "ol") { closeList(); html += "<ol>"; inList = "ol"; }
+        html += `<li>${inline(m[1])}</li>`; continue;
+      }
+      closeList();
+      html += `<p>${inline(line)}</p>`;
+    }
+    closeList();
+    return html;
+  }
+  function inline(text) {
+    text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    text = text.replace(/\[([^\]]+)\]\((https?:[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+    text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
+    return text;
+  }
+
+  function startReport(topic) {
+    emptyState.remove?.();
+    sourceCount = 0;
+    countBadge.textContent = "0";
+    sourcesEl.innerHTML = "";
+    canvasInner.innerHTML = `
+      <div class="report-card">
+        <div class="report-head">
+          <div class="report-head-row">
+            <div class="eyebrow">Official Research Report</div>
+            <button class="print-btn" id="printBtn" disabled title="Available once the report is complete">Print / Export PDF</button>
+          </div>
+          <h1>${escapeHtml(topic)}</h1>
+          <div class="doc-id" id="reportDocId">Preparing&hellip;</div>
+          <div class="meta-row" id="reportMetaRow"><span id="reportMeta">Gathering sources&hellip;</span></div>
+        </div>
+        <div class="report-body" id="reportBody"><span class="cursor"></span></div>
+      </div>
+    `;
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+  }
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  async function run() {
+    const topic = topicEl.value.trim();
+    if (!topic) { topicEl.focus(); return; }
+
+    runBtn.disabled = true;
+    runBtn.textContent = "Researching\u2026";
+    resetStepper();
+    startReport(topic);
+    setStep(0, "Generating search queries");
+
+    const url = `${API_BASE}/api/research?topic=${encodeURIComponent(topic)}`;
+    let resp;
+    try {
+      resp = await fetch(url);
+    } catch {
+      showError(`Could not reach backend at ${API_BASE} \u2014 is it running?`);
+      resetButton();
+      return;
+    }
+    if (!resp.ok || !resp.body) {
+      showError(`Server error (${resp.status})`);
+      resetButton();
+      return;
+    }
+
+    // SSE events are separated by a blank line, but they can arrive split
+    // across multiple chunks (or several events in one chunk), so just
+    // buffer everything and peel off complete "event\ndata" blocks as we
+    // find blank-line separators.
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let idx;
+      while ((idx = buffer.indexOf("\n\n")) !== -1) {
+        handleEvent(buffer.slice(0, idx));
+        buffer = buffer.slice(idx + 2);
+      }
+    }
+    resetButton();
+  }
+
+  function showError(message) {
+    const body = document.getElementById("reportBody") || canvasInner;
+    body.innerHTML = `<div class="error-banner">${escapeHtml(message)}</div>`;
+  }
+
+  // one of these per SSE message, dispatches on the "event:" line - see
+  // backend/main.py's sse() for what gets sent and when
+  function handleEvent(chunk) {
+    const eventMatch = chunk.match(/^event: (.+)$/m);
+    const dataMatch = chunk.match(/^data: (.+)$/m);
+    if (!eventMatch || !dataMatch) return;
+    const event = eventMatch[1];
+    const data = JSON.parse(dataMatch[1]);
+
+    if (event === "status") {
+      setStep(0, data.message);
+    } else if (event === "queries") {
+      setStep(1, `Searching ${data.queries.length} quer${data.queries.length === 1 ? "y" : "ies"}`);
+    } else if (event === "source") {
+      sourceCount++;
+      countBadge.textContent = String(sourceCount);
+      if (sourcesEl.querySelector(".empty-sources")) sourcesEl.innerHTML = "";
+      const a = document.createElement("a");
+      a.className = "source-row";
+      a.href = data.url; a.target = "_blank"; a.rel = "noopener";
+      a.innerHTML = `<div class="t">${escapeHtml(data.title)}</div><div class="u">${escapeHtml(domainOf(data.url))}</div>`;
+      sourcesEl.appendChild(a);
+      setStep(1, `Read ${sourceCount} source${sourceCount === 1 ? "" : "s"}`);
+      const meta = document.getElementById("reportMeta");
+      if (meta) meta.textContent = `${sourceCount} source${sourceCount === 1 ? "" : "s"} read so far\u2026`;
+    } else if (event === "report") {
+      setStep(2, "Synthesizing");
+      document.getElementById("reportBody").innerHTML = renderMarkdown(data.markdown);
+      const docId = document.getElementById("reportDocId");
+      if (docId) docId.textContent = `Document Ref. ${data.report_id || "\u2014"}`;
+      const metaRow = document.getElementById("reportMetaRow");
+      if (metaRow) {
+        const n = data.source_count;
+        metaRow.innerHTML = `
+          <span>Generated ${escapeHtml(data.generated_at || "")}</span>
+          <span>${n} source${n === 1 ? "" : "s"} cited</span>
+          <span>Prepared by AI Research Assistant</span>
+        `;
+      }
+      const printBtn = document.getElementById("printBtn");
+      if (printBtn) printBtn.disabled = false;
+      completeAllSteps();
+    } else if (event === "error") {
+      showError(data.message);
+    }
+  }
+
+  function resetButton() {
+    runBtn.disabled = false;
+    runBtn.textContent = "Start research";
+  }
+
+  runBtn.addEventListener("click", run);
+  topicEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) run();
+  });
+</script>
+</body>
+</html>
